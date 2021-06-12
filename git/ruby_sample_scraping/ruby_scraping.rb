@@ -3,11 +3,14 @@
  
 #webに接続するためのライブラリ
 require "open-uri"
-#クレイピングに使用するライブラリ
+#htmlの情報を取得するためのライブラリ
 require "nokogiri"
+#csvを出力するためのライブラリ
+require 'csv'
  
 #クレイピング対象のURL
-url = "https://www.youtube.com/feed/trending?bp=6gQJRkVleHBsb3Jl"
+url = "https://qiita.com/"
+
 #取得するhtml用charset
 charset = nil
  
@@ -20,7 +23,29 @@ end
  
 # Nokogiri で切り分け
 contents = Nokogiri::HTML.parse(html,nil,charset)
- 
-puts contents.css('label')
+
+# <br>タグを改行（\n）に変えて置くとスクレイピングしやすくなるらしい。
+contents.search('br').each { |n| n.replace("\n") }
+
+titles = []
+contents.xpath("//h2/a").map do |title|
+  titles.push(title.text)
+end
+
+detail_urls = []
+contents.xpath("//h2/a").map do |url|
+  detail_urls.push(url.attribute('href').value)
+end
+
+rows = [titles, detail_urls]
+
+# csvで出力
+CSV.open('target.csv', 'w') do |csv|
+  rows.each do |row|
+    csv << row
+  end
+end
+
+
 
 

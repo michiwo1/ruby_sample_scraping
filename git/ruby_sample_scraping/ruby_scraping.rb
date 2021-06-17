@@ -9,7 +9,7 @@ require "nokogiri"
 require 'csv'
  
 #クレイピング対象のURL
-url = "https://qiita.com/"
+url = "https://qiita.com/question-trend"
 
 #取得するhtml用charset
 charset = nil
@@ -24,17 +24,18 @@ end
 # Nokogiri で切り分け
 contents = Nokogiri::HTML.parse(html,nil,charset)
 
-# <br>タグを改行（\n）に変えて置くとスクレイピングしやすくなるらしい。
+# <br>タグを改行（\n）に変えて置くとスクレイピングしやすくなるらしい。。
 contents.search('br').each { |n| n.replace("\n") }
 
+# xpath + クラス名で絞る(※クラスの前に1つ以上の要素指定が必要, クラス名はシングルクォーテーションで囲う)
 titles = []
-contents.xpath("//h2/a").map do |title|
+contents.xpath("//a[@class='css-y5mpg1 e1c4qyq01']").map do |title|
   titles.push(title.text)
 end
 
 detail_urls = []
-contents.xpath("//h2/a").map do |url|
-  detail_urls.push(url.attribute('href').value)
+contents.xpath("//a[@class='css-y5mpg1 e1c4qyq01']").map do |detail_url|
+  detail_urls.push(url + detail_url.attribute('href').value)
 end
 
 rows = [titles, detail_urls]
@@ -45,7 +46,3 @@ CSV.open('target.csv', 'w') do |csv|
     csv << row
   end
 end
-
-
-
-

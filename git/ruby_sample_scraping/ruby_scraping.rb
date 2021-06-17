@@ -9,7 +9,7 @@ require "nokogiri"
 require 'csv'
  
 #クレイピング対象のURL
-url = "https://qiita.com/"
+url = "https://zenn.dev"
 
 #取得するhtml用charset
 charset = nil
@@ -28,13 +28,13 @@ contents = Nokogiri::HTML.parse(html,nil,charset)
 contents.search('br').each { |n| n.replace("\n") }
 
 titles = []
-contents.xpath("//h2/a").map do |title|
+contents.xpath("//div/article/div/a/h2").map do |title|
   titles.push(title.text)
 end
 
 detail_urls = []
-contents.xpath("//h2/a").map do |url|
-  detail_urls.push(url.attribute('href').value)
+contents.xpath("//div/article/div/a[@class='ArticleList_link__1sza2']").map do |detail_url|
+  detail_urls.push(url + detail_url.attribute('href').value)
 end
 
 rows = [titles, detail_urls]
@@ -45,7 +45,4 @@ CSV.open('target.csv', 'w') do |csv|
     csv << row
   end
 end
-
-
-
 
